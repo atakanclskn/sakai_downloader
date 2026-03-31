@@ -1,0 +1,54 @@
+{
+  "Navbar": {
+    "launchApp": "Uygulamaya Git →",
+    "github": "GitHub"
+  },
+  "Hero": {
+    "eyebrow": "Açık Kaynak · Ücretsiz · Sadece Tarayıcıda",
+    "title": "Derslerini. Tek ZIP.",
+    "subtitle": "Dosyaları tek tek indirmeyi bırak. Parolan cihazından hiç çıkmadan saniyeler içinde tüm Sakai ders içeriklerini al.",
+    "launchApp": "Uygulamaya Git →",
+    "github": "GitHub'da İncele ↗"
+  },
+  "ProblemSolution": {
+    "beforeTitle": "Eski Yöntem",
+    "beforeText": "Her derse gir → her haftayı bul → her dosyayı indir → 40 kez tekrarla.",
+    "afterTitle": "Yeni Yöntem",
+    "afterText": "Bir kez giriş yap → dersleri seç → ZIP'i al."
+  },
+  "HowItWorks": {
+    "title": "Nasıl çalışır?",
+    "step1Title": "Güvenli giriş yap",
+    "step1Text": "Üniversite bilgilerini gir. Bilgilerin sadece tarayıcında kalır.",
+    "step2Title": "Dersleri seç",
+    "step2Text": "Yedeklemek istediğin dersleri seç.",
+    "step3Title": "Her şeyi indir",
+    "step3Text": "Tek tıkla tüm ders materyallerinin düzenli bir ZIP dosyasını indir."
+  },
+  "Platforms": {
+    "title": "Desteklenen Platformlar",
+    "moodle": "Moodle",
+    "sakai": "Sakai",
+    "canvas": "Canvas (Yakında)",
+    "blackboard": "Blackboard (Yakında)",
+    "prPrompt": "Üniversiteni göremiyor musun? GitHub'da PR aç, ekleyelim."
+  },
+  "Security": {
+    "title": "Parolan tarayıcından asla ayrılmaz.",
+    "point1Title": "Sıfır Sunucu İsteği",
+    "point1Text": "Kimlik bilgilerin, yalnızca yerel Playwright/tarayıcı otomasyonu aracılığıyla kimlik doğrulama için kullanılır.",
+    "point2Title": "İstemci Taraflı İşleme",
+    "point2Text": "Tüm toplama ve ZIP oluşturma işlemleri doğrudan senin makinen üzerinde veya güvenli ve durumsuz oturumlar sayesinde gerçekleşir.",
+    "point3Title": "Sekmeyi Kapat, Oturum Bitsin",
+    "point3Text": "Veritabanı yok, çerez karmaşası yok, hiçbir takip yok. Tam gizlilik."
+  },
+  "OpenSource": {
+    "title": "Öğrenciler tarafından, öğrenciler için yapıldı.",
+    "subtitle": "SakaiGrab %100 açık kaynak kodludur.",
+    "starOnGithub": "GitHub'da Yıldızla ★"
+  },
+  "Footer": {
+    "tagline": "Veri toplanmaz. Hesap açılmaz. Saçmalık yok.",
+    "designedBy": "DESIGNED BY ATAKANCLSKN"
+  }
+}

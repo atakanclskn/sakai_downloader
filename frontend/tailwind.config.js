@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+﻿/** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'class',
   content: [
@@ -8,25 +8,26 @@ module.exports = {
   ],
   theme: {
     extend: {
-      colors: {
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
-        card: 'var(--card)',
-        cardForeground: 'var(--card-foreground)',
-        border: 'var(--border)',
-        input: 'var(--input)',
-        primary: 'var(--primary)',
-        primaryForeground: 'var(--primary-foreground)',
-        secondary: 'var(--secondary)',
-        secondaryForeground: 'var(--secondary-foreground)',
-        muted: 'var(--muted)',
-        mutedForeground: 'var(--muted-foreground)',
-        accent: 'var(--accent)',
-        accentForeground: 'var(--accent-foreground)',
-        destructive: 'var(--destructive)',
-        destructiveForeground: 'var(--destructive-foreground)',
-        ring: 'var(--ring)',
+      fontFamily: {
+        sans: ['var(--font-geist-sans)'],
+        mono: ['var(--font-geist-mono)'],
       },
+      colors: {
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: 'hsl(var(--primary))',
+        'primary-foreground': 'hsl(var(--primary-foreground))',
+        defaultBg: 'hsl(var(--background))',
+        defaultFg: 'hsl(var(--foreground))',
+        securityBg: 'hsl(var(--security-bg))',
+        securityFg: 'hsl(var(--security-fg))',
+        accentBg: 'hsl(var(--accent))',
+        accentFg: 'hsl(var(--accent-foreground))',
+        border: 'hsl(var(--border) / <alpha-value>)',
+      },
+      backgroundImage: {
+        'grid-pattern': 'linear-gradient(to right, hsla(var(--foreground) / 0.05) 1px, transparent 1px), linear-gradient(to bottom, hsla(var(--foreground) / 0.05) 1px, transparent 1px)'
+      }
     },
   },
   plugins: [],
