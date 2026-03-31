@@ -52,42 +52,12 @@ const normalizeDownloadUrl = (baseUrl, maybeRelativeUrl) => {
   return `${baseUrl}${maybeRelativeUrl.startsWith("/") ? "" : "/"}${maybeRelativeUrl}`;
 };
 
-const toFileList = (payload, siteId, baseUrl) => {
-  const collection =
-    payload?.content_collection ?? payload?.contentCollection ?? payload?.items ?? payload?.results ?? payload ?? [];
-
-  if (!Array.isArray(collection)) {
-    return [];
-  }
-
-  return collection
-    .map((item) => {
-      const isFolder = item.type === "folder" || item.isCollection === true;
-      if (isFolder) {
-        return null;
-      }
-
-      const entityId = item.entityId ?? "";
-      const storagePath = entityId.replace(`/group/${siteId}/`, "").replace(/^\/+/, "");
-      const inferredName = storagePath.split("/").pop();
-      const originalName = item.fileName ?? item.title ?? inferredName ?? "dosya";
-      const safeName = safeFileName(originalName);
-
-      const downloadUrl = normalizeDownloadUrl(
-        baseUrl,
-        item.downloadUrl ?? item.url ?? item.entityURL ?? item.reference
-      );
-
-      return {
-        id: item.id ?? entityId ?? safeName,
-        path: storagePath || safeName,
-        name: safeName,
-        size: Number(item.contentLength ?? item.size ?? 0),
-        downloadUrl
-      };
-    })
-    .filter((item) => item?.downloadUrl);
-};
+const sanitizeZipPath = (rawPath) =>
+  rawPath
+    .split("/")
+    .map((segment) => safeFileName(segment))
+    .filter(Boolean)
+    .join("/");
 
 const createAuthedRequestContext = (baseUrl, storageState) =>
   request.newContext({
@@ -153,17 +123,69 @@ export const loginAndFetchCourses = async ({ username, password, baseUrl: rawBas
   }
 };
 
+const fetchFolderContentsRecursive = async (req, siteId, baseUrl, parentPath = "", contentId) => {
+  try {
+    const endpoint = contentId 
+      ? `/direct/content/${contentId}.json?_limit=20000`
+      : `/direct/content/site/${siteId}.json?_limit=20000`;
+    
+    const response = await req.get(endpoint);
+    if (!response.ok()) return [];
+    
+    const payload = await response.json();
+    const items = Array.isArray(payload) ? payload : 
+                   (payload?.content_collection ?? payload?.contentCollection ?? 
+                    payload?.items ?? payload?.results ?? payload ?? []);
+    
+    const allFiles = [];
+    
+    for (const item of items) {
+      const isFolder = item.type === "folder" || item.isCollection === true;
+      const entityId = item.entityId ?? "";
+      const storagePath = entityId.replace(`/group/${siteId}/`, "").replace(/^\/+/, "");
+      const inferredName = storagePath.split("/").pop();
+      const originalName = item.fileName ?? item.title ?? inferredName ?? "dosya";
+      const safeName = safeFileName(originalName);
+      const fullPath = parentPath ? `${parentPath}/${safeName}` : safeName;
+      
+      if (isFolder) {
+        // Klasörün içini recursive olarak fetch et
+        const folderId = item.id ?? entityId;
+        if (folderId) {
+          const nestedFiles = await fetchFolderContentsRecursive(req, siteId, baseUrl, fullPath, folderId);
+          allFiles.push(...nestedFiles);
+        }
+        continue;
+      }
+      
+      const downloadUrl = normalizeDownloadUrl(
+        baseUrl,
+        item.downloadUrl ?? item.url ?? item.entityURL ?? item.reference
+      );
+      
+      if (!downloadUrl) continue;
+      
+      allFiles.push({
+        id: item.id ?? entityId ?? safeName,
+        path: sanitizeZipPath(fullPath),
+        name: safeName,
+        size: Number(item.contentLength ?? item.size ?? 0),
+        downloadUrl
+      });
+    }
+    
+    return allFiles;
+  } catch (error) {
+    console.warn(`Folder traverse failed: ${error.message}`);
+    return [];
+  }
+};
+
 export const fetchCourseFiles = async ({ storageState, baseUrl, siteId }) => {
   const req = await createAuthedRequestContext(baseUrl, storageState);
 
   try {
-    const response = await req.get(`/direct/content/site/${siteId}.json?_limit=20000`);
-    if (!response.ok()) {
-      throw new Error(`Icerik listesi alinamadi (site=${siteId}, HTTP ${response.status()})`);
-    }
-
-    const payload = await response.json();
-    return toFileList(payload, siteId, baseUrl);
+    return await fetchFolderContentsRecursive(req, siteId, baseUrl);
   } finally {
     await req.dispose();
   }

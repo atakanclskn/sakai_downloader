@@ -11,6 +11,11 @@ const COURSE_TYPE_LABEL = {
   site: "Site"
 };
 
+const extractCourseCode = (title) => {
+  const match = title.match(/^([A-Z]{2,3}\s?\d{4})/);
+  return match ? match[1].replace(/\s/g, "") : "Diğer";
+};
+
 export default function HomePage() {
   const [form, setForm] = useState({
     username: "",
@@ -27,6 +32,29 @@ export default function HomePage() {
   const [loadingZip, setLoadingZip] = useState(false);
   const [error, setError] = useState("");
   const [lastDownload, setLastDownload] = useState(null);
+  const [searchFilter, setSearchFilter] = useState("");
+  const [expandedGroups, setExpandedGroups] = useState({});
+
+  const groupedCourses = useMemo(() => {
+    const groups = {};
+    authState.courses.forEach((course) => {
+      const code = extractCourseCode(course.title);
+      if (!groups[code]) groups[code] = [];
+      groups[code].push(course);
+    });
+    return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [authState.courses]);
+
+  const filteredGroups = useMemo(() => {
+    if (!searchFilter.trim()) return groupedCourses;
+    const query = searchFilter.toLowerCase();
+    return groupedCourses
+      .map(([code, courses]) => [
+        code,
+        courses.filter((c) => c.title.toLowerCase().includes(query) || code.toLowerCase().includes(query))
+      ])
+      .filter(([_, courses]) => courses.length > 0);
+  }, [groupedCourses, searchFilter]);
 
   const allSelected = useMemo(
     () => authState.courses.length > 0 && selectedCourses.length === authState.courses.length,
@@ -37,6 +65,30 @@ export default function HomePage() {
     setSelectedCourses((prev) =>
       prev.includes(courseId) ? prev.filter((id) => id !== courseId) : [...prev, courseId]
     );
+  };
+
+  const toggleGroup = (code) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [code]: !prev[code]
+    }));
+  };
+
+  const toggleGroupSelection = (code, courses, selectAll = true) => {
+    const courseIdsInGroup = courses.map((c) => c.id);
+    if (selectAll) {
+      setSelectedCourses((prev) => [...new Set([...prev, ...courseIdsInGroup])]);
+    } else {
+      setSelectedCourses((prev) => prev.filter((id) => !courseIdsInGroup.includes(id)));
+    }
+  };
+
+  const isGroupFullySelected = (courses) => {
+    return courses.length > 0 && courses.every((c) => selectedCourses.includes(c.id));
+  };
+
+  const isGroupPartiallySelected = (courses) => {
+    return courses.some((c) => selectedCourses.includes(c.id)) && !isGroupFullySelected(courses);
   };
 
   const toggleAll = () => {
@@ -168,27 +220,71 @@ export default function HomePage() {
           {hasSession && (
             <>
               <p className="muted">
-                {authState.courses.length} ders bulundu. Oturum suresi:{" "}
+                {selectedCourses.length} / {authState.courses.length} ders secildi. Oturum suresi:{" "}
                 {new Date(authState.expiresAt).toLocaleTimeString("tr-TR")}
               </p>
-              <div className="course-grid">
-                {authState.courses.map((course) => (
-                  <label key={course.id} className="course-card">
-                    <input
-                      type="checkbox"
-                      checked={selectedCourses.includes(course.id)}
-                      onChange={() => toggleCourse(course.id)}
-                    />
-                    <div>
-                      <strong>{course.title}</strong>
-                      <span>{COURSE_TYPE_LABEL[course.type] || course.type || "Ders"}</span>
-                    </div>
-                  </label>
-                ))}
+
+              <div className="search-box">
+                <input
+                  type="text"
+                  placeholder="Ders ara (kod yada ad)..."
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  className="search-input"
+                />
               </div>
 
-              <button className="btn primary" onClick={onCreateZip} disabled={loadingZip}>
-                {loadingZip ? "Zip hazirlaniyor..." : "Secili Dersleri Zip Yap"}
+              <div className="course-groups">
+                {filteredGroups.length === 0 ? (
+                  <p className="muted">Aramaniza uygun ders bulunamadi.</p>
+                ) : (
+                  filteredGroups.map(([code, courses]) => (
+                    <div key={code} className="course-group">
+                      <div className="group-header">
+                        <button
+                          className="group-toggle"
+                          onClick={() => toggleGroup(code)}
+                          aria-expanded={expandedGroups[code] ?? true}
+                        >
+                          <span className="toggle-icon">{expandedGroups[code] ?? true ? "▼" : "▶"}</span>
+                          <span className="code">{code}</span>
+                          <span className="count">({courses.length} ders)</span>
+                        </button>
+                        <label className="checkbox-label" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            indeterminate={isGroupPartiallySelected(courses)}
+                            checked={isGroupFullySelected(courses)}
+                            onChange={() => toggleGroupSelection(code, courses, !isGroupFullySelected(courses))}
+                          />
+                          <span>Grubu sec</span>
+                        </label>
+                      </div>
+
+                      {(expandedGroups[code] ?? true) && (
+                        <div className="group-courses">
+                          {courses.map((course) => (
+                            <label key={course.id} className="course-card">
+                              <input
+                                type="checkbox"
+                                checked={selectedCourses.includes(course.id)}
+                                onChange={() => toggleCourse(course.id)}
+                              />
+                              <div>
+                                <strong>{course.title}</strong>
+                                <span>{COURSE_TYPE_LABEL[course.type] || course.type || "Ders"}</span>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <button className="btn primary" onClick={onCreateZip} disabled={loadingZip || !selectedCourses.length}>
+                {loadingZip ? "Zip hazirlaniyor..." : `${selectedCourses.length} Dersi Zip Yap`}
               </button>
             </>
           )}

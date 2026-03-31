@@ -63,6 +63,11 @@ export const createCoursesZip = async ({ session, selectedCourses }) => {
     }
 
     for (const file of files) {
+      // Folder'ları skip et (download linki yok)
+      if (file.isFolder || !file.downloadUrl) {
+        continue;
+      }
+
       const innerPath = file.path ? sanitizeZipPath(file.path) : safeFileName(file.name);
       const zipEntry = path.posix.join(courseFolder, innerPath);
 
