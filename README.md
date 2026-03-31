@@ -12,7 +12,7 @@ Dokuz Eylul Sakai (ve benzer Sakai kurulumlari) icin gelistirilmis, secili dersl
 
 ## Mimari
 
-- `frontend/`: React + Vite istemci
+- `frontend/`: Next.js + React istemci
 - `backend/`: Express API + Playwright tabanli Sakai baglanti katmani
 
 ## 1) Backend Kurulum
@@ -36,7 +36,7 @@ npm install
 npm run dev
 ```
 
-Frontend varsayilan olarak `http://localhost:5173` adresinde calisir.
+Frontend varsayilan olarak `http://localhost:3000` adresinde calisir.
 
 ## API Ozet
 
