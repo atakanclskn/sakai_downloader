@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { FileArchive, Menu, X } from 'lucide-react';
@@ -10,6 +11,7 @@ import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 
 export default function Navbar() {
   const t = useTranslations('Navbar');
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const { scrollY } = useScroll();
   
@@ -48,7 +50,7 @@ export default function Navbar() {
             {t('github')}
           </a>
           <Link
-            href="/app"
+            href={`/${locale}/app`}
             className="inline-flex h-9 items-center justify-center bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-transform hover:-translate-y-0.5"
           >
             {t('launchApp')}
@@ -77,7 +79,7 @@ export default function Navbar() {
             {t('github')}
           </a>
           <Link
-            href="/app"
+            href={`/${locale}/app`}
             className="inline-flex h-10 items-center justify-center bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow"
             onClick={() => setIsOpen(false)}
           >

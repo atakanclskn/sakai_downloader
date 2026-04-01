@@ -106,7 +106,7 @@ export function AppWidget() {
         )
       );
     } catch (err) {
-      setError(t("app.errorLogin"));
+      setError(err.message || t("app.errorLogin"));
     } finally {
       setLoadingLogin(false);
     }
@@ -117,10 +117,13 @@ export function AppWidget() {
     setLoadingZip(true);
     setError("");
     try {
-      const result = await createZipForCourses(authState.sessionId, selectedCourses, form.baseUrl);
-      setLastDownload(result);
+      const result = await createZipForCourses({
+        sessionId: authState.sessionId,
+        courseIds: selectedCourses
+      });
+      setLastDownload({ ...result, sessionId: authState.sessionId });
     } catch (err) {
-      setError(t("app.errorFetch"));
+      setError(err.message || t("app.errorFetch"));
     } finally {
       setLoadingZip(false);
     }
@@ -311,11 +314,14 @@ export function AppWidget() {
           {lastDownload ? (
             <div className="bg-primary/10 border border-primary/20 p-4 rounded-xl flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-foreground">{t("app.downloadFile")} {lastDownload.filename}</p>
+                <p className="text-sm font-medium text-foreground">{t("app.downloadFile")} {lastDownload.fileName}</p>
                 <p className="text-xs text-muted-foreground mt-1">{t("app.expires")} {new Date(lastDownload.expiresAt).toLocaleTimeString()}</p>
               </div>
               <a
-                href={getDownloadUrl(lastDownload.filename)}
+                href={getDownloadUrl({
+                  sessionId: lastDownload.sessionId,
+                  downloadId: lastDownload.downloadId
+                })}
                 className="shrink-0 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-2"
                 download
               >
